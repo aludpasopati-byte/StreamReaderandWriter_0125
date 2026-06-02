@@ -1,0 +1,111 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <array>
+
+using namespace std;
+
+class TokoElektronik {
+private:
+    array<string, 3> etalase = {"Laptop", "Smartphone", "TV"};
+
+public:
+    string ambilProduk(size_t nomorRak) {
+        try {
+            return etalase.at(nomorRak);
+        }
+        catch (const out_of_range&) {
+            throw string("Gagal Mengambil Barang : Rak nomor " +
+                         to_string(nomorRak) +
+                         " kosong atau tidak tersedia!");
+        }
+    }
+};
+
+const string FILE_GUDANG = "gudang.txt";
+
+void tampilkan() {
+    ifstream file(FILE_GUDANG);
+    string barang;
+    int no = 1;
+
+    cout << "\nDaftar Barang:\n";
+    while (getline(file, barang))
+        cout << no++ << ". " << barang << endl;
+}
+
+vector<string> bacaFile() {
+    vector<string> data;
+    ifstream file(FILE_GUDANG);
+    string barang;
+
+    while (getline(file, barang))
+        data.push_back(barang);
+
+    return data;
+}
+
+void simpanFile(vector<string> data) {
+    ofstream file(FILE_GUDANG);
+    for (string barang : data)
+        file << barang << endl;
+}
+
+int main() {
+    int pilih;
+    TokoElektronik toko;
+
+    do {
+        tampilkan();
+
+        cout << "\n\n1.Tambah\n2.Ubah\n3.Hapus\n4.Simulasi Etalase\n5.Keluar\nPilihan: ";
+        cin >> pilih;
+        cin.ignore();
+
+        vector<string> data = bacaFile();
+        string barang;
+        int idx;
+
+        switch (pilih) {
+        case 1:
+            cout << "Nama barang: ";
+            getline(cin, barang);
+            ofstream(FILE_GUDANG, ios::app) << barang << endl;
+            break;
+
+        case 2:
+            cout << "Nomor barang: ";
+            cin >> idx;
+            cin.ignore();
+            cout << "Nama baru: ";
+            getline(cin, barang);
+            if (idx >= 1 && idx <= data.size()) {
+                data[idx - 1] = barang;
+                simpanFile(data);
+            }
+            break;
+
+        case 3:
+            cout << "Nomor barang: ";
+            cin >> idx;
+            if (idx >= 1 && idx <= data.size()) {
+                data.erase(data.begin() + idx - 1);
+                simpanFile(data);
+            }
+            break;
+
+        case 4:
+            try {
+                cout << "\nRak 1 : " << toko.ambilProduk(1) << endl;
+                cout << "Rak 5 : " << toko.ambilProduk(5) << endl;
+            }
+            catch (string e) {
+                cout << e << endl;
+            }
+            break;
+        }
+
+    } while (pilih != 5);
+
+    return 0;
+}
